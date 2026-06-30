@@ -16,9 +16,10 @@
 8. [Yapılar (Struct)](#8-yapılar-struct)
 9. [Döngüler (Loops)](#9-döngüler-loops)
 10. [İşaretçiler (Pointers)](#10-i̇şaretçiler-pointers)
-11. [Dosya İşlemleri](#11-dosya-i̇şlemleri)
-12. [Temel #include Başlıkları](#12-temel-include-başlıkları)
-13. [Hızlı Başvuru — Sık Yapılan Hatalar](#13-hızlı-başvuru--sık-yapılan-hatalar)
+11. [Dinamik Bellek Yönetimi (malloc / free)](#11-dinamik-bellek-yönetimi-malloc--free)
+12. [Dosya İşlemleri](#12-dosya-i̇şlemleri)
+13. [Temel #include Başlıkları](#13-temel-include-başlıkları)
+14. [Hızlı Başvuru — Sık Yapılan Hatalar](#14-hızlı-başvuru--sık-yapılan-hatalar)
 
 ---
 
@@ -458,9 +459,227 @@ int main() {
 
 ---
 
-## 11. Dosya İşlemleri
+## 11. Dinamik Bellek Yönetimi (malloc / free)
 
-### 11.1 Dosyaya Yazma / Ekleme
+> 🆕 Bu bölüm derse yeni eklenmiştir. İşaretçiler konusunun doğrudan devamıdır — `malloc` bir **pointer döndürür**, bu yüzden Bölüm 10'u bilmek burayı anlamak için gereklidir.  
+> Gerekli başlık dosyası: `#include <stdlib.h>`
+
+### 11.1 Neden Dinamik Bellek?
+
+Normal ("static") diziler derleme zamanında (compile-time) sabit boyutludur ve bellekte **stack** denen alanda tutulur:
+
+```c
+int dizi[10];   // Boyut HER ZAMAN 10'dur; programın hiçbir yerinde değiştirilemez
+```
+
+Ama bazen dizinin kaç elemanlı olacağı ancak **çalışma zamanında** (runtime) — örneğin kullanıcının girdiği bir sayıyla — belli olur. İşte bu durumda **heap** adı verilen, programcının elle yönettiği bellek alanı kullanılır.
+
+| Fonksiyon | Görevi | Döndürdüğü |
+|-----------|--------|-----------|
+| `malloc(boyut)` | Belirtilen byte kadar **ilklendirilmemiş** bellek ayırır | Başarılı: adres / Başarısız: `NULL` |
+| `calloc(adet, boyut)` | Bellek ayırır VE tüm baytları **0** ile doldurur | Başarılı: adres / Başarısız: `NULL` |
+| `realloc(ptr, yeniBoyut)` | Önceden ayrılmış belleği büyütür/küçültür | Başarılı: yeni adres / Başarısız: `NULL` |
+| `free(ptr)` | Ayrılan belleği işletim sistemine geri verir | — |
+
+### 11.2 `malloc()` — Bellek Ayırma
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+
+int main() {
+    int n = 5;
+
+    // malloc, istenen byte sayısı kadar HEAP'te yer ayırır ve başlangıç adresini döner
+    int *dizi = malloc(n * sizeof(int));   // 5 * 4 = 20 byte ayrılır (int genelde 4 byte)
+
+    // ✅ ZORUNLU: malloc başarısız olursa NULL döner — kontrol etmeden kullanma!
+    if (dizi == NULL) {
+        printf("Hata: Bellek ayrilamadi!\n");
+        return 1;
+    }
+
+    // Pointer, normal dizi gibi [] ile kullanılabilir
+    for (int i = 0; i < n; i++) {
+        dizi[i] = i * 10;
+    }
+
+    for (int i = 0; i < n; i++) {
+        printf("dizi[%d] = %d\n", i, dizi[i]);
+    }
+
+    free(dizi);     // ⚠️ Kullanım bitince MUTLAKA serbest bırak!
+    dizi = NULL;    // 💡 free sonrası NULL atamak "dangling pointer" hatasını önler
+
+    return 0;
+}
+```
+
+> ⚠️ **Kritik:** `malloc` ile ayrılan bellek **ilklendirilmemiştir** — içinde rastgele ("çöp") değerler bulunur. Kullanmadan önce mutlaka kendin doldurmalısın.  
+> 💡 **`sizeof` Kuralı:** `malloc` her zaman **byte** cinsinden boyut ister; bu yüzden `n * sizeof(int)` gibi `sizeof` ile çarpım yapılır — asla `malloc(n)` gibi tek başına eleman sayısı yazılmaz.  
+> 💡 C'de `malloc`'un döndürdüğü `void*` pointer'ı başka bir pointer tipine atarken **cast gerekmez** (`int *dizi = malloc(...)` yeterlidir); C++'ta ise cast zorunludur.
+
+### 11.3 `calloc()` — Sıfırlanmış Bellek Ayırma
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+
+int main() {
+    int n = 5;
+
+    // calloc(eleman_sayisi, eleman_boyutu) — malloc'tan farkı: tüm baytları 0 yapar
+    int *dizi = calloc(n, sizeof(int));
+
+    if (dizi == NULL) {
+        printf("Hata: Bellek ayrilamadi!\n");
+        return 1;
+    }
+
+    // Tüm elemanlar otomatik olarak 0'dır (malloc'ta rastgele değer olurdu)
+    for (int i = 0; i < n; i++) {
+        printf("dizi[%d] = %d\n", i, dizi[i]);  // Hepsi 0 yazdırır
+    }
+
+    free(dizi);
+    return 0;
+}
+```
+
+> 💡 **`malloc` vs `calloc` Farkı:** `malloc(n * sizeof(int))` ham/rastgele değerli bellek verir; `calloc(n, sizeof(int))` aynı miktarda belleği **0'larla doldurarak** verir. Parametre sırası da farklıdır: `calloc(adet, tekElemanBoyutu)`.  
+> ⚠️ `calloc` iki parametreyi çarpıp taşma (overflow) kontrolü de yapar; bu yüzden çok büyük dizilerde `malloc`'a göre biraz daha güvenlidir.
+
+### 11.4 `realloc()` — Yeniden Boyutlandırma
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+
+int main() {
+    int *dizi = malloc(3 * sizeof(int));
+    if (dizi == NULL) return 1;
+
+    dizi[0] = 1; dizi[1] = 2; dizi[2] = 3;
+
+    // Diziyi 3'ten 6 elemana büyüt — eski veriler korunur
+    int *temp = realloc(dizi, 6 * sizeof(int));
+
+    // ⚠️ realloc başarısız olursa NULL döner ve ESKİ pointer hâlâ geçerlidir
+    if (temp == NULL) {
+        printf("Hata: Yeniden boyutlandirma basarisiz!\n");
+        free(dizi);   // Eski belleği kaybetmemek için serbest bırak
+        return 1;
+    }
+    dizi = temp;   // ✅ Doğrusu: geçici pointer'a atayıp sonra ana pointer'a aktar
+
+    dizi[3] = 4; dizi[4] = 5; dizi[5] = 6;
+
+    for (int i = 0; i < 6; i++) {
+        printf("dizi[%d] = %d\n", i, dizi[i]);
+    }
+
+    free(dizi);
+    return 0;
+}
+```
+
+> ⚠️ **Kritik Hata:** `dizi = realloc(dizi, yeniBoyut);` şeklinde **doğrudan** atama yapma! `realloc` başarısız olup `NULL` dönerse, orijinal bellek adresini kaybedersin (bellek sızıntısı). Önce geçici bir pointer'a ata, `NULL` kontrolü yap, sonra asıl pointer'a aktar — yukarıdaki örnekteki gibi.
+
+### 11.5 `free()` — Belleği Serbest Bırakma ve Sık Yapılan Hatalar
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+
+int main() {
+    int *p = malloc(sizeof(int));
+    if (p == NULL) return 1;
+
+    *p = 42;
+    printf("Deger: %d\n", *p);
+
+    free(p);     // Belleği işletim sistemine geri ver
+    p = NULL;    // ⚠️ free sonrası pointer'ı yanlışlıkla kullanmamak için NULL'a eşitle
+
+    // free(p);  // ❌ HATALI: "double free" — aynı belleği iki kez serbest bırakmak çökmeye yol açar
+    // *p = 5;   // ❌ HATALI: "use after free" — serbest bırakılan belleğe erişmek tanımsız davranıştır
+
+    return 0;
+}
+```
+
+> ⚠️ **Bellek Sızıntısı (Memory Leak):** `malloc`/`calloc`/`realloc` ile ayrılan **her bellek** için mutlaka bir `free()` çağrısı olmalıdır. Unutulursa program çalıştıkça bellek tüketimi artar ve sistem yavaşlayabilir.  
+> ⚠️ **Double Free:** Aynı pointer'ı iki kez `free` etmek programın çökmesine (crash) sebep olabilir.  
+> ⚠️ **Use After Free:** `free` edilen belleğe `*p` ile erişmeye çalışmak tanımsız davranıştır (undefined behavior). `free` sonrası pointer'ı `NULL` yapmak, yanlışlıkla tekrar kullanılırsa hatayı (çökme şeklinde) hemen ortaya çıkarır ve bu yüzden iyi bir alışkanlıktır.
+
+### 11.6 Stack vs Heap Karşılaştırması
+
+| Özellik | Stack (Static dizi) | Heap (Dinamik — `malloc`) |
+|---|---|---|
+| Ayırma | `int dizi[10];` | `malloc(10 * sizeof(int));` |
+| Boyut | Derleme zamanında sabit | Çalışma zamanında belirlenebilir |
+| Temizlik | Fonksiyon bitince **otomatik** silinir | `free()` ile **elle** silinmelidir |
+| Hız | Çok hızlı | Stack'e göre daha yavaş |
+| Risk | Sabit/sınırlı boyut | Bellek sızıntısı / dangling pointer riski |
+
+> 💡 **Ne zaman dinamik bellek kullanmalı?** Dizinin boyutu çalışma zamanında değişebiliyorsa (kullanıcı girdisine bağlıysa) veya çok büyük veri tutuluyorsa `malloc`/`calloc` tercih edilir. Boyut baştan biliniyor ve küçükse normal (static) dizi yeterlidir.
+
+### 11.7 Dinamik Bellek + Struct Örneği
+
+Bölüm 8'deki `Student` struct'ı dinamik olarak da ayrılabilir. Dinamik ayrılan bir struct'ın alanlarına erişmek için `.` yerine `->` (ok) operatörü kullanılır:
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+struct Student {
+    char   name[50];
+    int    age;
+    double gpa;
+};
+
+int main() {
+    // Tek bir struct için dinamik bellek ayırma
+    struct Student *s = malloc(sizeof(struct Student));
+    if (s == NULL) return 1;
+
+    // ⚠️ Dinamik ayrılan struct pointer'ına '->' ile erişilir, '.' ile DEĞİL
+    strcpy(s->name, "Ali");
+    s->age = 21;
+    s->gpa = 3.5;
+
+    printf("Ad: %s, Yas: %d, GPA: %.1f\n", s->name, s->age, s->gpa);
+
+    free(s);
+    s = NULL;
+
+    // Birden fazla öğrenci için dinamik struct DİZİSİ
+    int n = 3;
+    struct Student *sinif = malloc(n * sizeof(struct Student));
+    if (sinif == NULL) return 1;
+
+    strcpy(sinif[0].name, "Ayse");  sinif[0].age = 20;
+    strcpy(sinif[1].name, "Mehmet"); sinif[1].age = 22;
+    strcpy(sinif[2].name, "Zeynep"); sinif[2].age = 19;
+
+    for (int i = 0; i < n; i++) {
+        printf("%s - %d\n", sinif[i].name, sinif[i].age);
+    }
+
+    free(sinif);
+    return 0;
+}
+```
+
+> 💡 **`.` mi `->` mi?** Pointer **olmayan** bir struct değişkeninde `.` kullanılır (`ogrenci1.age`, Bölüm 8'deki gibi). Bir struct **pointer'ı** varsa (`malloc` ile ayrıldıysa veya `&` ile adres alındıysa) `->` kullanılır (`s->age`). `s->age` aslında `(*s).age` ifadesinin kısayoludur.  
+> 💡 Bir struct **dizisi** `malloc` ile ayrıldığında, elemanlarına yine `[]` ile erişilir ve her eleman pointer olmadığı için `.` kullanılır: `sinif[0].age` — `sinif` pointer'dır ama `sinif[0]` bir struct değeridir.
+
+---
+
+## 12. Dosya İşlemleri
+
+### 12.1 Dosyaya Yazma / Ekleme
 
 ```c
 #include <stdio.h>
@@ -486,7 +705,7 @@ int main() {
 }
 ```
 
-### 11.2 Dosyadan Okuma
+### 12.2 Dosyadan Okuma
 
 ```c
 #include <stdio.h>
@@ -513,7 +732,7 @@ int main() {
 > 💡 **Orijinal notta tek `fgets` çağrısı vardı** — bu yalnızca ilk satırı okur.  
 > Tüm dosyayı okumak için `while` döngüsü içine alınmalıdır (yukarıdaki gibi).
 
-### 11.3 Dosya Açma Modları
+### 12.3 Dosya Açma Modları
 
 | Mod | Ad | Dosya varsa | Dosya yoksa |
 |-----|----|-------------|-------------|
@@ -525,11 +744,11 @@ int main() {
 
 ---
 
-## 12. Temel #include Başlıkları
+## 13. Temel #include Başlıkları
 
 ```c
 #include <stdio.h>    // printf, scanf, fgets, fopen, fclose, fprintf, FILE
-#include <stdlib.h>   // malloc, free, exit, atoi, rand
+#include <stdlib.h>   // malloc, calloc, realloc, free, exit, atoi, rand
 #include <string.h>   // strcpy, strlen, strcmp, strcat, strcspn
 #include <math.h>     // pow, sqrt, ceil, floor, fabs  → gcc'de -lm bayrağı lazım!
 #include <ctype.h>    // toupper, tolower, isdigit, isalpha
@@ -537,7 +756,7 @@ int main() {
 
 ---
 
-## 13. Hızlı Başvuru — Sık Yapılan Hatalar
+## 14. Hızlı Başvuru — Sık Yapılan Hatalar
 
 | # | ❌ Hatalı Yazım | ✅ Doğru Yazım | Neden? |
 |---|----------------|----------------|--------|
@@ -551,7 +770,12 @@ int main() {
 | 8 | `#include <math.h>` yok ama `pow` kullanılmış | Başlık dosyasını ekle | Tanımsız fonksiyon hatası |
 | 9 | Tek `fgets` ile tüm dosyayı okuma | `while (fgets(...) != NULL)` döngüsü | Sadece ilk satırı okur |
 | 10 | `for` döngüsünde `i++` veya `i--` unutma | Sayacı her iterasyonda güncelle | Sonsuz döngü |
+| 11 | `malloc` sonrası `NULL` kontrolü yok | Her zaman `if (p == NULL)` kontrol et | Bellek ayrılamazsa program çökebilir |
+| 12 | `malloc` sonrası `free` çağrılmıyor | Kullanım bitince mutlaka `free(p);` | Bellek sızıntısı (memory leak) |
+| 13 | `free(p);` sonra tekrar `free(p);` | `free` sonrası `p = NULL;` yap | Double free → program çökmesi |
+| 14 | `dizi = realloc(dizi, yeniBoyut);` | `temp = realloc(...); if (temp) dizi = temp;` | `realloc` başarısız olursa orijinal pointer kaybolur |
+| 15 | `malloc(n)` (sizeof unutuldu) | `malloc(n * sizeof(int))` | `malloc` byte ister, eleman sayısı değil |
 
 ---
 
-*Son güncelleme: C99/C11 standardına göre düzenlenmiştir.*
+*Son güncelleme: C99/C11 standardına göre düzenlenmiş; Bölüm 11 "Dinamik Bellek Yönetimi (malloc/free)" eklenmiştir.*
