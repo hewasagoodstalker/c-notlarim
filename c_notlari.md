@@ -1,6 +1,6 @@
 # C Programlama Dili — Ders Notları
 
-> **Nasıl Kullanılır?** Her bölümde önce özet tablo/açıklama, ardından çalışan kod örneği, en altta ise ⚠️ uyarılar ve 💡 ipuçları yer alır.
+> **Nasıl Kullanılır?** Her bölümde önce özet tablo/açıklama, ardından çalışan kod örneği, en altta ise ⚠️ uyarılar ve 💡 ipuçları yer alır. 🆕 işareti bu güncellemede eklenen bölüm ve alt başlıkları gösterir.
 
 ---
 
@@ -8,18 +8,21 @@
 
 1. [Temel Veri Tipleri](#1-temel-veri-tipleri)
 2. [Sabitler](#2-sabitler)
-3. [Matematik Fonksiyonları](#3-matematik-fonksiyonları)
-4. [Girdi Alma](#4-girdi-alma)
-5. [Diziler (Arrays)](#5-diziler-arrays)
-6. [Fonksiyonlar](#6-fonksiyonlar)
-7. [Koşullu İfadeler](#7-koşullu-i̇fadeler)
-8. [Yapılar (Struct)](#8-yapılar-struct)
-9. [Döngüler (Loops)](#9-döngüler-loops)
-10. [İşaretçiler (Pointers)](#10-i̇şaretçiler-pointers)
-11. [Dinamik Bellek Yönetimi (malloc / free)](#11-dinamik-bellek-yönetimi-malloc--free)
-12. [Dosya İşlemleri](#12-dosya-i̇şlemleri)
-13. [Temel #include Başlıkları](#13-temel-include-başlıkları)
-14. [Hızlı Başvuru — Sık Yapılan Hatalar](#14-hızlı-başvuru--sık-yapılan-hatalar)
+3. [Operatörler](#3-operatörler) 🆕
+4. [Matematik Fonksiyonları](#4-matematik-fonksiyonları)
+5. [Girdi Alma](#5-girdi-alma)
+6. [Diziler (Arrays)](#6-diziler-arrays)
+7. [String'ler ve string.h Fonksiyonları](#7-stringler-ve-stringh-fonksiyonları) 🆕
+8. [Fonksiyonlar](#8-fonksiyonlar)
+9. [Koşullu İfadeler](#9-koşullu-i̇fadeler)
+10. [Yapılar (Struct)](#10-yapılar-struct)
+11. [Döngüler (Loops)](#11-döngüler-loops)
+12. [İşaretçiler (Pointers)](#12-i̇şaretçiler-pointers)
+13. [Dinamik Bellek Yönetimi (malloc / free)](#13-dinamik-bellek-yönetimi-malloc--free)
+14. [Dosya İşlemleri](#14-dosya-i̇şlemleri)
+15. [Rastgele Sayı Üretimi (rand / srand)](#15-rastgele-sayı-üretimi-rand--srand) 🆕
+16. [Temel #include Başlıkları](#16-temel-include-başlıkları)
+17. [Hızlı Başvuru — Sık Yapılan Hatalar](#17-hızlı-başvuru--sık-yapılan-hatalar)
 
 ---
 
@@ -56,6 +59,54 @@ int main() {
 
 > 💡 **İpucu:** `char isim[20]` tanımlarken 20 karakterden biri string'i sonlandıran `'\0'` (null) karakterine ayrılır; yani aslında 19 karakter yazabilirsin.
 
+### Ek Sayısal Tipler 🆕
+
+| Tip | Açıklama | Format Belirteci | Örnek Tanımlama |
+|-----|----------|-----------------|-----------------|
+| `float` | Kesirli sayı (tek hassasiyet, ~6-7 basamak) | `%f` | `float boy = 1.75f;` |
+| `long` | Büyük tam sayı | `%ld` | `long nufus = 84000000L;` |
+| `long long` | Çok büyük tam sayı | `%lld` | `long long buyuk = 9000000000LL;` |
+| `short` | Küçük tam sayı (bellek tasarrufu) | `%hd` | `short kucuk = 12;` |
+| `unsigned int` | Yalnızca pozitif tam sayı | `%u` | `unsigned int adet = 42;` |
+
+> 💡 **float mı double mı?** `double` çift hassasiyettir (~15 basamak) ve günlük kullanımda varsayılan tercihtir; `float` yazacaksan sabitin sonuna `f` eki koy (`1.75f`).  
+> ⚠️ **scanf farkı:** `printf`'te `double` için `%f` yeterlidir ama `scanf`'te `double` okurken **`%lf` zorunludur**: `scanf("%lf", &gpa);` — `%f` yazarsan değer yanlış okunur!  
+> 💡 C99'dan itibaren `#include <stdbool.h>` ile `bool tamam = true;` kullanılabilir. Zaten C'de kural şudur: `0` = yanlış, `0` dışı her değer = doğru.
+
+### printf Formatları ve Kaçış Karakterleri 🆕
+
+| Yazım | Anlamı | Örnek | Çıktı |
+|-------|--------|-------|-------|
+| `%.2f` | Virgülden sonra 2 basamak | `printf("%.2f", 3.14159);` | `3.14` |
+| `%5d` | En az 5 karakter genişlik (sağa yaslı) | `printf("[%5d]", 42);` | `[   42]` |
+| `%-5d` | Sola yaslı genişlik | `printf("[%-5d]", 42);` | `[42   ]` |
+| `%%` | Yüzde işaretinin kendisi | `printf("%d%%", 50);` | `50%` |
+
+| Kaçış | Anlamı |
+|-------|--------|
+| `\n` | Yeni satır |
+| `\t` | Sekme (tab) |
+| `\\` | Ters bölü (`\`) işaretinin kendisi |
+| `\"` | Çift tırnak |
+| `\0` | Null karakter — string sonlandırıcı |
+
+```c
+#include <stdio.h>
+
+int main() {
+    double pi = 3.14159;
+
+    printf("Ham:        %f\n",   pi);    // 3.141590
+    printf("2 basamak:  %.2f\n", pi);    // 3.14
+    printf("Ad\tSoyad\n");               // Arada tab boşluğu bırakır
+    printf("O, \"merhaba\" dedi.\n");    // Çift tırnak yazdırma
+    printf("Indirim: %%20\n");           // Çıktı: Indirim: %20
+    return 0;
+}
+```
+
+> 💡 Koddaki `//` tek satırlık, `/* ... */` çok satırlı **yorumdur**; derleyici tarafından tamamen yok sayılır.
+
 ---
 
 ## 2. Sabitler
@@ -68,9 +119,128 @@ const double PI      = 3.14159;  // double sabiti
 > 💡 **Kural:** Sabit (değişmez) değişken isimleri geleneksel olarak **BÜYÜK HARF** ile yazılır.  
 > ⚠️ `const` ile tanımlanan değişkene sonradan değer atamaya çalışırsan **derleme hatası** alırsın.
 
+### #define ile Sabit Tanımlama 🆕
+
+```c
+#include <stdio.h>
+
+#define PI 3.14159        // Önişlemci sabiti — tip YOK, noktalı virgül YOK
+#define MAKS_BOYUT 100
+
+int main() {
+    double alan = PI * 5 * 5;   // Derlemeden ÖNCE "PI" gördüğü her yere 3.14159 yazılır
+    printf("Alan: %.2f\n", alan);        // 78.54
+    printf("Maks: %d\n", MAKS_BOYUT);    // 100
+    return 0;
+}
+```
+
+> 💡 **`const` vs `#define`:** `#define` derleme öncesi düz **metin değişimidir** (önişlemci); `const` ise tipi olan gerçek bir değişkendir ve tip denetiminden geçer. Modern C'de genellikle `const` tercih edilir.  
+> ⚠️ `#define PI 3.14;` şeklinde satır sonuna **`;` koyma** — koyarsan o `;` de her kullanım yerine kopyalanır ve anlaşılması zor hatalara yol açar.
+
 ---
 
-## 3. Matematik Fonksiyonları
+## 3. Operatörler
+
+> 🆕 Bu bölüm notlara yeni eklenmiştir. Karşılaştırma (`==`, `>`) ve mantıksal (`&&`, `||`) operatörler Bölüm 9'da koşullarla birlikte zaten kullanılıyordu; burada tüm operatör ailesi toplu hâlde verilmiştir.
+
+### 3.1 Aritmetik Operatörler
+
+| Operatör | Anlam | Örnek | Sonuç |
+|----------|-------|-------|-------|
+| `+` | Toplama | `7 + 2` | `9` |
+| `-` | Çıkarma | `7 - 2` | `5` |
+| `*` | Çarpma | `7 * 2` | `14` |
+| `/` | Bölme | `7 / 2` | `3` ⚠️ (3.5 değil!) |
+| `%` | Mod — bölümden kalan | `7 % 2` | `1` |
+
+```c
+#include <stdio.h>
+
+int main() {
+    int a = 7, b = 2;
+
+    printf("Toplam: %d\n", a + b);   // 9
+    printf("Fark:   %d\n", a - b);   // 5
+    printf("Carpim: %d\n", a * b);   // 14
+    printf("Bolum:  %d\n", a / b);   // 3  ⚠️ int/int → küsurat ATILIR
+    printf("Kalan:  %d\n", a % b);   // 1  (7 = 2*3 + 1)
+    return 0;
+}
+```
+
+> ⚠️ **Kritik:** İki tam sayının bölümü **her zaman tam sayıdır** — `7 / 2 = 3` olur, `3.5` değil! Küsuratlı sonuç için Tip Dönüşümü gerekir (3.4).  
+> ⚠️ `%` (mod) yalnızca **tam sayılarla** çalışır; `double` ile kullanırsan derleme hatası alırsın (ondalıklı kalan için `math.h` içinde `fmod` var).  
+> 💡 **Klasik kullanımlar:** `if (sayi % 2 == 0)` → sayı çifttir; `sayi % 10` → son basamağı verir.
+
+### 3.2 Artırma / Azaltma ve Atama Kısayolları
+
+| Operatör | Anlam | Uzun Hâli |
+|----------|-------|-----------|
+| `x++` / `++x` | 1 artır | `x = x + 1;` |
+| `x--` / `--x` | 1 azalt | `x = x - 1;` |
+| `x += 5` | 5 ekle | `x = x + 5;` |
+| `x -= 5` | 5 çıkar | `x = x - 5;` |
+| `x *= 2` | 2 ile çarp | `x = x * 2;` |
+| `x /= 2` | 2'ye böl | `x = x / 2;` |
+
+```c
+#include <stdio.h>
+
+int main() {
+    int x = 5;
+
+    int y = x++;   // ÖNCE ata (y = 5), SONRA artır (x = 6)
+    int z = ++x;   // ÖNCE artır (x = 7), SONRA ata (z = 7)
+
+    printf("x=%d y=%d z=%d\n", x, y, z);   // x=7 y=5 z=7
+    return 0;
+}
+```
+
+> 💡 Tek başına bir satırda `x++;` ile `++x;` **aynı işi yapar** (Bölüm 11'deki döngü sayaçları gibi). Fark yalnızca aynı ifade içinde **atamayla birleştiğinde** ortaya çıkar — kafa karışıklığını önlemek için artırmayı ayrı satırda yapman yeterli.
+
+### 3.3 Karşılaştırma Operatörleri
+
+| Operatör | Anlam | Örnek |
+|----------|-------|-------|
+| `==` | Eşit mi? | `x == 5` |
+| `!=` | Eşit değil mi? | `x != 5` |
+| `>` / `<` | Büyük / küçük | `x > 5` |
+| `>=` / `<=` | Büyük eşit / küçük eşit | `x >= 5` |
+
+> ⚠️ **Kritik:** `=` **atama**, `==` **karşılaştırmadır**!  
+> `if (x = 5)` yazarsan karşılaştırma değil atama yaparsın: `x`'e 5 atanır, 5 de "0 dışı = doğru" sayıldığı için koşul **her zaman doğru** olur — derleyici çoğu zaman ses çıkarmaz, sinsi bir hatadır.  
+> ⚠️ String'ler `==` ile **karşılaştırılamaz** — `strcmp` gerekir (Bölüm 7).  
+> 💡 Karşılaştırmanın sonucu C'de bir sayıdır: doğruysa `1`, yanlışsa `0`.
+
+### 3.4 Tip Dönüşümü (Type Casting)
+
+```c
+#include <stdio.h>
+
+int main() {
+    int a = 7, b = 2;
+
+    printf("%d\n", a / b);             // 3        (int bölme)
+    printf("%f\n", (double)a / b);     // 3.500000 ✅ önce a double'a çevrilir, bölme double olur
+    printf("%f\n", (double)(a / b));   // 3.000000 ❌ önce int bölme biter, İŞ İŞTEN GEÇMİŞTİR
+
+    double ort = (80 + 85) / 2.0;      // 💡 Sabitlerden birini 2.0 yazmak da dönüşümü tetikler
+    printf("Ortalama: %.1f\n", ort);   // 82.5
+
+    printf("%d\n", (int)3.9);          // 3 — double → int'te küsurat YUVARLANMAZ, ATILIR
+    return 0;
+}
+```
+
+> 💡 **Örtük (otomatik) dönüşüm:** `int` bir değer `double` değişkene atanırsa C bunu kendiliğinden çevirir (`double d = 5;` → `5.0` olur).  
+> 💡 **Açık dönüşüm (cast):** `(hedefTip)ifade` şeklinde yazılır — Bölüm 4'teki `(int)pow(2,3)` örneği gibi.  
+> ⚠️ Cast'in **yerine** dikkat: `(double)a / b` ile `(double)(a / b)` aynı şey **değildir** (yukarıdaki örnek).
+
+---
+
+## 4. Matematik Fonksiyonları
 
 > ⚠️ **Zorunlu:** Bu fonksiyonları kullanmak için dosyanın en üstüne `#include <math.h>` eklemelisin.  
 > Derleme komutu: `gcc program.c -o program -lm` (`-lm` bayrağı şart!)
@@ -99,9 +269,9 @@ int main() {
 
 ---
 
-## 4. Girdi Alma
+## 5. Girdi Alma
 
-### 4.1 `scanf` — Tek Kelime veya Sayı Okuma
+### 5.1 `scanf` — Tek Kelime veya Sayı Okuma
 
 ```c
 #include <stdio.h>
@@ -125,7 +295,10 @@ int main() {
 > Sayı ve karakter değişkenlerinde `scanf` mutlaka `&` ile birlikte kullanılır: `scanf("%d", &sayi);`  
 > ⚠️ `scanf("%s", ...)` boşlukta durur; boşluklu girişler için `fgets` kullan.
 
-### 4.2 `fgets` — Boşluklu / Uzun Metin Okuma
+> 💡 🆕 `double` okurken format `%lf` olmalıdır: `scanf("%lf", &gpa);` — `printf`'teki `%f`'ten farklıdır (bkz. Bölüm 1'deki not).  
+> 💡 🆕 `&`'nin neden zorunlu olduğunun asıl açıklaması Bölüm 12'de ("Fonksiyona Pointer Geçirme").
+
+### 5.2 `fgets` — Boşluklu / Uzun Metin Okuma
 
 ```c
 #include <stdio.h>
@@ -142,13 +315,13 @@ int main() {
 ```
 
 > 💡 **Fark:** `fgets`, satır sonundaki `'\n'` karakterini de diziye dahil eder.  
-> Bunu kaldırmak için: `isim[strcspn(isim, "\n")] = '\0';` (`#include <string.h>` gerekir)
+> Bunu kaldırmak için: `isim[strcspn(isim, "\n")] = '\0';` (`#include <string.h>` gerekir — string fonksiyonları için bkz. Bölüm 7)
 
 ---
 
-## 5. Diziler (Arrays)
+## 6. Diziler (Arrays)
 
-### 5.1 Tek Boyutlu Dizi
+### 6.1 Tek Boyutlu Dizi
 
 ```c
 #include <stdio.h>
@@ -173,7 +346,7 @@ int main() {
 > ⚠️ **Dizi indeksleri 0'dan başlar!** 5 elemanlı dizinin son elemanı `[4]`'tür, `[5]` değil.  
 > ⚠️ Sınır dışına çıkmak (`luckyNumbers[10]`) **tanımsız davranış** (undefined behavior) yaratır — program çöküp görünmez hata üretebilir.
 
-### 5.2 Çok Boyutlu Dizi (2D Matris)
+### 6.2 Çok Boyutlu Dizi (2D Matris)
 
 ```c
 #include <stdio.h>
@@ -204,9 +377,81 @@ int main() {
 
 ---
 
-## 6. Fonksiyonlar
+## 7. String'ler ve string.h Fonksiyonları
 
-### 6.1 `void` Fonksiyon (Değer Döndürmez)
+> 🆕 Bu bölüm notlara yeni eklenmiştir. C'de ayrı bir "string" tipi yoktur: string, sonu `'\0'` (null) karakteriyle biten bir **char dizisidir** (Bölüm 1'deki `char isim[]` tanımını ve Bölüm 6'daki dizileri hatırla). `strcpy` (Bölüm 10) ve `strcspn` (Bölüm 5.2) notların başka yerlerinde zaten geçiyordu; burada toplu olarak açıklanmıştır.  
+> Gerekli başlık dosyası: `#include <string.h>`
+
+| Fonksiyon | Görevi | Örnek | Sonuç |
+|-----------|--------|-------|-------|
+| `strlen(s)` | Uzunluk (`'\0'` hariç) | `strlen("Ali")` | `3` |
+| `strcpy(hedef, kaynak)` | Kaynağı hedefe kopyalar | `strcpy(ad, "Ali")` | `ad = "Ali"` |
+| `strcat(hedef, kaynak)` | Hedefin sonuna ekler | `strcat(ad, " Can")` | `"Ali Can"` |
+| `strcmp(s1, s2)` | İçerikleri karşılaştırır | `strcmp("Ali", "Ali")` | `0` (eşit!) |
+| `strcspn(s, "\n")` | Verilen karakterlerden ilkinin konumunu bulur | — | `fgets` temizliği (Bölüm 5.2) |
+
+```c
+#include <stdio.h>
+#include <string.h>
+
+int main() {
+    char ad[50]   = "Ali";      // ⚠️ Ekleme yapılacaksa diziyi GENİŞ tanımla!
+    char soyad[]  = "Yilmaz";
+
+    printf("Uzunluk: %d\n", (int)strlen(ad));   // 3  ('\0' sayılmaz)
+
+    strcat(ad, " ");
+    strcat(ad, soyad);                    // ad artık "Ali Yilmaz"
+    printf("Tam ad: %s\n", ad);
+
+    // Karşılaştırma — SONUÇ 0 İSE EŞİTTİR!
+    if (strcmp(ad, "Ali Yilmaz") == 0) {
+        printf("Isimler ayni!\n");
+    }
+
+    char kopya[50];
+    strcpy(kopya, ad);                    // = ile atama ÇALIŞMAZ (Bölüm 10'daki uyarı)
+    printf("Kopya: %s\n", kopya);
+    return 0;
+}
+```
+
+> ⚠️ **Kritik:** String'ler `==` ile karşılaştırılamaz! `if (s1 == s2)` içerikleri değil, **bellek adreslerini** karşılaştırır. Doğrusu: `if (strcmp(s1, s2) == 0)`.  
+> ⚠️ `strcmp`'in dönüşü: `0` → eşit; negatif → `s1` alfabetik olarak önce; pozitif → sonra gelir. `== 0` yazmayı unutma — `if (strcmp(a, b))` tam tersine "eşit **değilse**" doğru olur!  
+> ⚠️ **Taşma tehlikesi:** `strcpy`/`strcat` hedef diziye sığıp sığmadığını **kontrol etmez** — hedef diziyi baştan yeterince büyük tanımla (`char ad[50]` gibi).  
+> ⚠️ `gets()` fonksiyonunu **asla kullanma** — taşma kontrolü yapmaz ve standarttan tamamen kaldırılmıştır. Yerine `fgets` (Bölüm 5.2).  
+> 💡 `strlen` aslında `size_t` tipinde değer döndürür; `%zu` ile yazdırılır ya da yukarıdaki gibi `(int)` cast ile `%d` kullanılır.
+
+### Karakter Fonksiyonları (ctype.h) 🆕
+
+| Fonksiyon | Görevi | Örnek |
+|-----------|--------|-------|
+| `toupper(c)` | Büyük harfe çevirir | `toupper('a')` → `'A'` |
+| `tolower(c)` | Küçük harfe çevirir | `tolower('Z')` → `'z'` |
+| `isdigit(c)` | Rakam mı? | `isdigit('7')` → doğru (0 dışı) |
+| `isalpha(c)` | Harf mi? | `isalpha('k')` → doğru |
+
+```c
+#include <stdio.h>
+#include <ctype.h>
+
+int main() {
+    char ad[] = "ali can";
+
+    // Bu fonksiyonlar TEK karakterle çalışır; tüm string için döngü gerekir
+    for (int i = 0; ad[i] != '\0'; i++) {   // 💡 '\0' görene kadar ilerle
+        ad[i] = toupper(ad[i]);
+    }
+    printf("%s\n", ad);   // ALI CAN
+    return 0;
+}
+```
+
+---
+
+## 8. Fonksiyonlar
+
+### 8.1 `void` Fonksiyon (Değer Döndürmez)
 
 ```c
 #include <stdio.h>
@@ -227,7 +472,7 @@ int main() {
 > Çözüm 1: Fonksiyonu `main`'den önce tanımla (önerilen yöntem).  
 > Çözüm 2: `main`'den önce **prototip** bildir: `void sayHi(char name[]);`
 
-### 6.2 Değer Döndüren Fonksiyon
+### 8.2 Değer Döndüren Fonksiyon
 
 ```c
 #include <stdio.h>
@@ -251,9 +496,9 @@ int main() {
 
 ---
 
-## 7. Koşullu İfadeler
+## 9. Koşullu İfadeler
 
-### 7.1 `if / else if / else`
+### 9.1 `if / else if / else`
 
 ```c
 #include <stdio.h>
@@ -278,7 +523,7 @@ int main() {
 | `\|\|` | VEYA — en az biri doğruysa | `x>0 \|\| y>0` |
 | `!` | DEĞİL — koşulun tersini alır | `!tamam` |
 
-### 7.2 `switch / case`
+### 9.2 `switch / case`
 
 ```c
 #include <stdio.h>
@@ -311,9 +556,31 @@ int main() {
 > `break` olmadan program, eşleşen `case`'den sonraki **tüm `case`'leri de sırayla çalıştırır** (fall-through davranışı).  
 > Örnek: `grade = 'A'` iken `break` yoksa `"Mükemmel!"`, `"İyi!"`, `"Orta"` ... hepsi yazdırılır!
 
+### 9.3 Ternary (Üçlü) Operatör `?:` 🆕
+
+```c
+#include <stdio.h>
+
+int main() {
+    int yas = 20;
+
+    // koşul ? doğruysa_bu : yanlışsa_bu
+    printf("%s\n", (yas >= 18) ? "Yetiskin" : "Cocuk");   // Yetiskin
+
+    // if-else'in tek satırlık hâli: büyük olanı seç
+    int a = 5, b = 3;
+    int buyuk = (a > b) ? a : b;
+    printf("Buyuk olan: %d\n", buyuk);   // 5
+    return 0;
+}
+```
+
+> 💡 Ternary, basit if-else'leri tek satıra indirir ve bir **değer üretir** — bu yüzden atamanın sağ tarafında kullanılabilir.  
+> ⚠️ İç içe ternary (`a ? b : c ? d : e`) okunması zor koddur — karmaşık mantıkta klasik `if / else if / else` (9.1) tercih et.
+
 ---
 
-## 8. Yapılar (Struct)
+## 10. Yapılar (Struct)
 
 ```c
 #include <stdio.h>
@@ -344,15 +611,36 @@ int main() {
 }
 ```
 
-> ⚠️ **Kritik:** `struct` içindeki `char[]` alanlarına atama yapmak için `=` **çalışmaz**, `strcpy()` kullanılmalıdır.  
+> ⚠️ **Kritik:** `struct` içindeki `char[]` alanlarına atama yapmak için `=` **çalışmaz**, `strcpy()` kullanılmalıdır (ayrıntı: Bölüm 7).  
 > `strcpy` için `#include <string.h>` başlık dosyası gereklidir.  
 > 💡 Başlatma sırasında `struct Student s1 = {"Ali", "Müh.", 20, 3.7};` şeklinde direkt atama yapılabilir.
 
+### typedef ile Kısa İsim Tanımlama 🆕
+
+```c
+#include <stdio.h>
+
+typedef struct {
+    char name[50];
+    int  age;
+} Student;              // İsim EN SONDA yazılır; noktalı virgül yine ZORUNLU!
+
+int main() {
+    Student s1;          // Artık başına "struct" yazmak gerekmez
+    s1.age = 20;
+    printf("Yas: %d\n", s1.age);
+    return 0;
+}
+```
+
+> 💡 `typedef`, var olan bir tipe **takma ad** verir. En sık struct'larla karşına çıkar ama basit tiplerde de kullanılabilir: `typedef unsigned int uint;`  
+> 💡 Pointer'la kullanımda hiçbir şey değişmez: `Student *s = malloc(sizeof(Student));` → yine `s->age` ile erişilir (Bölüm 13.7).
+
 ---
 
-## 9. Döngüler (Loops)
+## 11. Döngüler (Loops)
 
-### 9.1 `while` — Önce Kontrol Et, Sonra Çalıştır
+### 11.1 `while` — Önce Kontrol Et, Sonra Çalıştır
 
 ```c
 #include <stdio.h>
@@ -367,7 +655,7 @@ int main() {
 }
 ```
 
-### 9.2 `do-while` — Önce Çalıştır, Sonra Kontrol Et
+### 11.2 `do-while` — Önce Çalıştır, Sonra Kontrol Et
 
 ```c
 #include <stdio.h>
@@ -385,7 +673,7 @@ int main() {
 > 💡 **Temel Fark:** `do-while` koşul yanlış olsa bile döngü gövdesi **en az 1 kez** çalışır.  
 > Kullanım senaryosu: Kullanıcıdan girdi alırken "en az bir kez sor" mantığında idealdir.
 
-### 9.3 `for` — Sayaçlı Döngü
+### 11.3 `for` — Sayaçlı Döngü
 
 ```c
 #include <stdio.h>
@@ -411,9 +699,44 @@ int main() {
 > — Koşul ne zaman sona erer bilmiyorsan → `while`  
 > — En az bir kez çalışması gerekiyorsa → `do-while`
 
+### 11.4 `break` ve `continue` 🆕
+
+| Komut | Etkisi |
+|-------|--------|
+| `break` | Döngüyü **tamamen** bitirir, döngüden çıkar |
+| `continue` | Yalnızca **o anki turu** atlar, sonraki tura geçer |
+
+```c
+#include <stdio.h>
+
+int main() {
+    // break: 5'i görünce döngü TAMAMEN biter
+    for (int i = 1; i <= 10; i++) {
+        if (i == 5) {
+            break;
+        }
+        printf("%d ", i);        // Çıktı: 1 2 3 4
+    }
+    printf("\n");
+
+    // continue: 3'ü ATLAR ama döngü devam eder
+    for (int i = 1; i <= 5; i++) {
+        if (i == 3) {
+            continue;
+        }
+        printf("%d ", i);        // Çıktı: 1 2 4 5
+    }
+    printf("\n");
+    return 0;
+}
+```
+
+> 💡 `break`'i `switch`'ten hatırlıyorsun (Bölüm 9.2) — oradaki görevi case'ler arası "düşmeyi" engellemekti; döngüdeki görevi ise döngüyü bitirmektir.  
+> ⚠️ İç içe döngülerde `break` yalnızca **en içteki** döngüden çıkar, hepsinden değil.
+
 ---
 
-## 10. İşaretçiler (Pointers)
+## 12. İşaretçiler (Pointers)
 
 ### Temel Kavramlar
 
@@ -457,14 +780,78 @@ int main() {
 > `int age → int *pAge` ✅ | `int age → double *pAge` ❌  
 > ⚠️ Başlatılmamış pointer kullanmak (dangling pointer) program çökmesine yol açar — her zaman bir değişkenin adresiyle ilklendir.
 
+### Fonksiyona Pointer Geçirme — swap Örneği 🆕
+
+C'de fonksiyon parametreleri **değerle** (by value) geçer: fonksiyona değişkenin kendisi değil, **kopyası** gider. Kopya üzerinde yapılan değişiklik orijinali etkilemez. Orijinali değiştirmek için değişkenin **adresini** (pointer) göndermek gerekir:
+
+```c
+#include <stdio.h>
+
+// ❌ ÇALIŞMAZ: a ve b, x ile y'nin KOPYALARIDIR — takas kopyalar üzerinde kalır
+void swapYanlis(int a, int b) {
+    int temp = a;
+    a = b;
+    b = temp;
+}
+
+// ✅ DOĞRU: adresler üzerinden orijinal değişkenlere ulaşılır
+void swap(int *a, int *b) {
+    int temp = *a;
+    *a = *b;
+    *b = temp;
+}
+
+int main() {
+    int x = 3, y = 7;
+
+    swapYanlis(x, y);
+    printf("swapYanlis sonrasi: x=%d y=%d\n", x, y);   // x=3 y=7 (değişmedi!)
+
+    swap(&x, &y);                                       // Adresleri gönder
+    printf("swap sonrasi:       x=%d y=%d\n", x, y);   // x=7 y=3 ✅
+    return 0;
+}
+```
+
+> 💡 **Şimdi anlam kazandı:** `scanf`'in `&` istemesinin sebebi tam olarak budur (Bölüm 5.1) — `scanf`, okuduğu değeri senin değişkenine **yazabilmek** için onun adresine ihtiyaç duyar.
+
+### Diziler ve Pointer İlişkisi 🆕
+
+```c
+#include <stdio.h>
+
+// Parametredeki "int dizi[]" aslında "int *dizi" ile birebir aynıdır
+void ikiyeKatla(int dizi[], int boyut) {
+    for (int i = 0; i < boyut; i++) {
+        dizi[i] *= 2;               // Kopya değil — ORİJİNAL dizi değişir!
+    }
+}
+
+int main() {
+    int sayilar[] = {1, 2, 3};
+
+    printf("%p\n", (void*)sayilar);       // Dizi adı = İLK elemanın adresi
+    printf("%p\n", (void*)&sayilar[0]);   // Aynı adres!
+
+    printf("%d\n", *(sayilar + 1));       // 2 → sayilar[1] ile tamamen aynı şey
+
+    ikiyeKatla(sayilar, 3);
+    printf("%d %d %d\n", sayilar[0], sayilar[1], sayilar[2]);   // 2 4 6
+    return 0;
+}
+```
+
+> 💡 **Üç kritik gerçek:** ① Dizi adı, ilk elemanın adresidir (`sayilar == &sayilar[0]`). ② `dizi[i]` ile `*(dizi + i)` aynı ifadedir (pointer aritmetiği). ③ Fonksiyona dizi "geçirmek" aslında pointer geçirmektir — bu yüzden fonksiyon diziyi değiştirebilir ve `&` yazmak gerekmez (Bölüm 5.1'de `scanf("%s", kelime)` için `&` gerekmemesinin sebebi de budur).  
+> ⚠️ Fonksiyon içinde `sizeof(dizi)` dizinin değil **pointer'ın** boyutunu verir (64-bit sistemde 8 byte) — bu yüzden boyut daima ayrı parametre olarak geçilir; Bölüm 6.1'deki `sizeof` hilesi yalnızca dizinin tanımlandığı yerde çalışır.
+
 ---
 
-## 11. Dinamik Bellek Yönetimi (malloc / free)
+## 13. Dinamik Bellek Yönetimi (malloc / free)
 
-> 🆕 Bu bölüm derse yeni eklenmiştir. İşaretçiler konusunun doğrudan devamıdır — `malloc` bir **pointer döndürür**, bu yüzden Bölüm 10'u bilmek burayı anlamak için gereklidir.  
+> 🆕 Bu bölüm derse bir önceki güncellemede eklenmiştir. İşaretçiler konusunun doğrudan devamıdır — `malloc` bir **pointer döndürür**, bu yüzden Bölüm 12'yi bilmek burayı anlamak için gereklidir.  
 > Gerekli başlık dosyası: `#include <stdlib.h>`
 
-### 11.1 Neden Dinamik Bellek?
+### 13.1 Neden Dinamik Bellek?
 
 Normal ("static") diziler derleme zamanında (compile-time) sabit boyutludur ve bellekte **stack** denen alanda tutulur:
 
@@ -481,7 +868,7 @@ Ama bazen dizinin kaç elemanlı olacağı ancak **çalışma zamanında** (runt
 | `realloc(ptr, yeniBoyut)` | Önceden ayrılmış belleği büyütür/küçültür | Başarılı: yeni adres / Başarısız: `NULL` |
 | `free(ptr)` | Ayrılan belleği işletim sistemine geri verir | — |
 
-### 11.2 `malloc()` — Bellek Ayırma
+### 13.2 `malloc()` — Bellek Ayırma
 
 ```c
 #include <stdio.h>
@@ -519,7 +906,7 @@ int main() {
 > 💡 **`sizeof` Kuralı:** `malloc` her zaman **byte** cinsinden boyut ister; bu yüzden `n * sizeof(int)` gibi `sizeof` ile çarpım yapılır — asla `malloc(n)` gibi tek başına eleman sayısı yazılmaz.  
 > 💡 C'de `malloc`'un döndürdüğü `void*` pointer'ı başka bir pointer tipine atarken **cast gerekmez** (`int *dizi = malloc(...)` yeterlidir); C++'ta ise cast zorunludur.
 
-### 11.3 `calloc()` — Sıfırlanmış Bellek Ayırma
+### 13.3 `calloc()` — Sıfırlanmış Bellek Ayırma
 
 ```c
 #include <stdio.h>
@@ -549,7 +936,7 @@ int main() {
 > 💡 **`malloc` vs `calloc` Farkı:** `malloc(n * sizeof(int))` ham/rastgele değerli bellek verir; `calloc(n, sizeof(int))` aynı miktarda belleği **0'larla doldurarak** verir. Parametre sırası da farklıdır: `calloc(adet, tekElemanBoyutu)`.  
 > ⚠️ `calloc` iki parametreyi çarpıp taşma (overflow) kontrolü de yapar; bu yüzden çok büyük dizilerde `malloc`'a göre biraz daha güvenlidir.
 
-### 11.4 `realloc()` — Yeniden Boyutlandırma
+### 13.4 `realloc()` — Yeniden Boyutlandırma
 
 ```c
 #include <stdio.h>
@@ -585,7 +972,7 @@ int main() {
 
 > ⚠️ **Kritik Hata:** `dizi = realloc(dizi, yeniBoyut);` şeklinde **doğrudan** atama yapma! `realloc` başarısız olup `NULL` dönerse, orijinal bellek adresini kaybedersin (bellek sızıntısı). Önce geçici bir pointer'a ata, `NULL` kontrolü yap, sonra asıl pointer'a aktar — yukarıdaki örnekteki gibi.
 
-### 11.5 `free()` — Belleği Serbest Bırakma ve Sık Yapılan Hatalar
+### 13.5 `free()` — Belleği Serbest Bırakma ve Sık Yapılan Hatalar
 
 ```c
 #include <stdio.h>
@@ -612,7 +999,7 @@ int main() {
 > ⚠️ **Double Free:** Aynı pointer'ı iki kez `free` etmek programın çökmesine (crash) sebep olabilir.  
 > ⚠️ **Use After Free:** `free` edilen belleğe `*p` ile erişmeye çalışmak tanımsız davranıştır (undefined behavior). `free` sonrası pointer'ı `NULL` yapmak, yanlışlıkla tekrar kullanılırsa hatayı (çökme şeklinde) hemen ortaya çıkarır ve bu yüzden iyi bir alışkanlıktır.
 
-### 11.6 Stack vs Heap Karşılaştırması
+### 13.6 Stack vs Heap Karşılaştırması
 
 | Özellik | Stack (Static dizi) | Heap (Dinamik — `malloc`) |
 |---|---|---|
@@ -624,9 +1011,9 @@ int main() {
 
 > 💡 **Ne zaman dinamik bellek kullanmalı?** Dizinin boyutu çalışma zamanında değişebiliyorsa (kullanıcı girdisine bağlıysa) veya çok büyük veri tutuluyorsa `malloc`/`calloc` tercih edilir. Boyut baştan biliniyor ve küçükse normal (static) dizi yeterlidir.
 
-### 11.7 Dinamik Bellek + Struct Örneği
+### 13.7 Dinamik Bellek + Struct Örneği
 
-Bölüm 8'deki `Student` struct'ı dinamik olarak da ayrılabilir. Dinamik ayrılan bir struct'ın alanlarına erişmek için `.` yerine `->` (ok) operatörü kullanılır:
+Bölüm 10'daki `Student` struct'ı dinamik olarak da ayrılabilir. Dinamik ayrılan bir struct'ın alanlarına erişmek için `.` yerine `->` (ok) operatörü kullanılır:
 
 ```c
 #include <stdio.h>
@@ -672,14 +1059,14 @@ int main() {
 }
 ```
 
-> 💡 **`.` mi `->` mi?** Pointer **olmayan** bir struct değişkeninde `.` kullanılır (`ogrenci1.age`, Bölüm 8'deki gibi). Bir struct **pointer'ı** varsa (`malloc` ile ayrıldıysa veya `&` ile adres alındıysa) `->` kullanılır (`s->age`). `s->age` aslında `(*s).age` ifadesinin kısayoludur.  
+> 💡 **`.` mi `->` mi?** Pointer **olmayan** bir struct değişkeninde `.` kullanılır (`ogrenci1.age`, Bölüm 10'daki gibi). Bir struct **pointer'ı** varsa (`malloc` ile ayrıldıysa veya `&` ile adres alındıysa) `->` kullanılır (`s->age`). `s->age` aslında `(*s).age` ifadesinin kısayoludur.  
 > 💡 Bir struct **dizisi** `malloc` ile ayrıldığında, elemanlarına yine `[]` ile erişilir ve her eleman pointer olmadığı için `.` kullanılır: `sinif[0].age` — `sinif` pointer'dır ama `sinif[0]` bir struct değeridir.
 
 ---
 
-## 12. Dosya İşlemleri
+## 14. Dosya İşlemleri
 
-### 12.1 Dosyaya Yazma / Ekleme
+### 14.1 Dosyaya Yazma / Ekleme
 
 ```c
 #include <stdio.h>
@@ -705,7 +1092,7 @@ int main() {
 }
 ```
 
-### 12.2 Dosyadan Okuma
+### 14.2 Dosyadan Okuma
 
 ```c
 #include <stdio.h>
@@ -732,7 +1119,7 @@ int main() {
 > 💡 **Orijinal notta tek `fgets` çağrısı vardı** — bu yalnızca ilk satırı okur.  
 > Tüm dosyayı okumak için `while` döngüsü içine alınmalıdır (yukarıdaki gibi).
 
-### 12.3 Dosya Açma Modları
+### 14.3 Dosya Açma Modları
 
 | Mod | Ad | Dosya varsa | Dosya yoksa |
 |-----|----|-------------|-------------|
@@ -744,19 +1131,56 @@ int main() {
 
 ---
 
-## 13. Temel #include Başlıkları
+## 15. Rastgele Sayı Üretimi (rand / srand)
+
+> 🆕 Bu bölüm notlara yeni eklenmiştir. Gerekli başlıklar: `#include <stdlib.h>` (`rand`, `srand`) ve `#include <time.h>` (`time`).
+
+| İfade | Ürettiği Aralık |
+|-------|-----------------|
+| `rand() % 6` | `0` – `5` |
+| `rand() % 6 + 1` | `1` – `6` (zar!) |
+| `rand() % 101` | `0` – `100` |
+| `alt + rand() % (ust - alt + 1)` | `alt` – `ust` (genel formül) |
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+int main() {
+    srand(time(NULL));   // Tohum (seed) — programın başında YALNIZCA 1 KEZ!
+
+    int zar    = rand() % 6 + 1;      // 1–6 arası
+    int yuzde  = rand() % 101;        // 0–100 arası
+    int aralik = 50 + rand() % 51;    // 50–100 arası (genel formül)
+
+    printf("Zar:    %d\n", zar);
+    printf("Yuzde:  %d\n", yuzde);
+    printf("Aralik: %d\n", aralik);
+    return 0;
+}
+```
+
+> ⚠️ **Kritik:** `srand(time(NULL))` çağrısını **döngünün içine koyma!** `time(NULL)` saniye cinsinden çalıştığı için aynı saniyedeki tüm çağrılar aynı tohumu üretir → hep "aynı rastgele" sayıyı alırsın.  
+> 💡 `srand` hiç çağrılmazsa `rand()` her program çalıştırışında **aynı sayı dizisini** üretir (varsayılan tohum 1'dir) — test / hata ayıklama sırasında bu aslında işine bile yarayabilir!
+
+---
+
+## 16. Temel #include Başlıkları
 
 ```c
 #include <stdio.h>    // printf, scanf, fgets, fopen, fclose, fprintf, FILE
-#include <stdlib.h>   // malloc, calloc, realloc, free, exit, atoi, rand
+#include <stdlib.h>   // malloc, calloc, realloc, free, exit, atoi, rand, srand
 #include <string.h>   // strcpy, strlen, strcmp, strcat, strcspn
 #include <math.h>     // pow, sqrt, ceil, floor, fabs  → gcc'de -lm bayrağı lazım!
 #include <ctype.h>    // toupper, tolower, isdigit, isalpha
+#include <time.h>     // time → srand(time(NULL)) tohumlaması için  🆕
+#include <stdbool.h>  // bool, true, false (C99)  🆕
 ```
 
 ---
 
-## 14. Hızlı Başvuru — Sık Yapılan Hatalar
+## 17. Hızlı Başvuru — Sık Yapılan Hatalar
 
 | # | ❌ Hatalı Yazım | ✅ Doğru Yazım | Neden? |
 |---|----------------|----------------|--------|
@@ -775,7 +1199,15 @@ int main() {
 | 13 | `free(p);` sonra tekrar `free(p);` | `free` sonrası `p = NULL;` yap | Double free → program çökmesi |
 | 14 | `dizi = realloc(dizi, yeniBoyut);` | `temp = realloc(...); if (temp) dizi = temp;` | `realloc` başarısız olursa orijinal pointer kaybolur |
 | 15 | `malloc(n)` (sizeof unutuldu) | `malloc(n * sizeof(int))` | `malloc` byte ister, eleman sayısı değil |
+| 16 | `if (x = 5)` | `if (x == 5)` | `=` atama yapar; koşul her zaman doğru olur |
+| 17 | `if (s1 == s2)` (string karşılaştırma) | `if (strcmp(s1, s2) == 0)` | `==` adresleri karşılaştırır, içeriği değil |
+| 18 | `double o = (a + b) / 2;` (`a`, `b` int) | `(a + b) / 2.0` veya cast kullan | Tam sayı bölmesi küsuratı atar |
+| 19 | `scanf("%f", &d);` (`d` double) | `scanf("%lf", &d);` | `scanf`'te double için `%lf` zorunlu |
+| 20 | `gets(isim);` | `fgets(isim, boyut, stdin);` | `gets` taşma kontrolü yapmaz (standarttan kaldırıldı) |
+| 21 | `srand` döngü içinde | Programın başında 1 kez çağır | Aynı tohum → hep aynı sayı üretir |
+
+> 🆕 16–21 numaralı satırlar bu güncellemede eklenmiştir.
 
 ---
 
-*Son güncelleme: C99/C11 standardına göre düzenlenmiş; Bölüm 11 "Dinamik Bellek Yönetimi (malloc/free)" eklenmiştir.*
+*Son güncelleme: C99/C11 standardına göre düzenlenmiştir. Önceki güncellemede Bölüm 13 "Dinamik Bellek Yönetimi (malloc/free)" eklenmişti; bu güncellemede Bölüm 3 "Operatörler", Bölüm 7 "String'ler ve string.h Fonksiyonları" ve Bölüm 15 "Rastgele Sayı Üretimi" ile 🆕 işaretli alt başlıklar (ek tipler, printf formatları, #define, tip dönüşümü, ternary, typedef, break/continue, swap, dizi-pointer ilişkisi) eklenmiş; bölüm numaraları ve içindekiler buna göre güncellenmiştir.*
